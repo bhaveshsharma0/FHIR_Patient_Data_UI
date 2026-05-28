@@ -1,0 +1,6 @@
+{
+  "name": "FHIR Patient Data UI",
+  "description": "Complete Patient Intelligence Platform featuring quality gaps analysis, claims processing, and AI-powered denial risk forecasting",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
