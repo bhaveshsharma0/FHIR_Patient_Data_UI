@@ -3,7 +3,7 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
-import { mockPatients, PatientProfile } from "./src/fhirMock.js";
+import { mockPatients, PatientProfile } from "./src/fhirMock.ts";
 
 // Load environment variables
 dotenv.config();
@@ -12,6 +12,17 @@ export const app = express();
 const PORT = 3000;
 
 app.use(express.json());
+
+// Vercel Path-Correction Middleware to resolve Express sub-routing issues
+app.use((req, _res, next) => {
+  const originalPath = req.headers["x-vercel-forwarded-path"] || req.headers["x-matched-path"];
+  if (originalPath && typeof originalPath === "string") {
+    const urlParts = req.url.split("?");
+    const query = urlParts[1] ? "?" + urlParts[1] : "";
+    req.url = originalPath + query;
+  }
+  next();
+});
 
 // Initialize Gemini SDK
 const apiKey = process.env.GEMINI_API_KEY;
