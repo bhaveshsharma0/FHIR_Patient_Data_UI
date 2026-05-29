@@ -68,7 +68,7 @@ const recentSearches: Array<{ id: string; name: string; dob: string; gender: str
 // Helper to safe-fetch from HAPI FHIR with timeout
 async function fhirFetch(endpoint: string) {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 12000); // 12 seconds timeout
+  const timeoutId = setTimeout(() => controller.abort(), 3500); // 3.5 seconds timeout
 
   try {
     const url = `https://hapi.fhir.org/baseR4/${endpoint}`;
