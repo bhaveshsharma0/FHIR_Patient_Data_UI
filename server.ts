@@ -15,11 +15,18 @@ app.use(express.json());
 
 // Vercel Path-Correction Middleware to resolve Express sub-routing issues
 app.use((req, _res, next) => {
-  const originalPath = req.headers["x-vercel-forwarded-path"] || req.headers["x-matched-path"];
-  if (originalPath && typeof originalPath === "string") {
+  // If the incoming URL already contains our core route descriptors, let's keep it pristine
+  const hasValidRoute = req.url.includes("/patient") || req.url.includes("/ai/") || req.url.includes("/health");
+  if (hasValidRoute) {
+    return next();
+  }
+
+  // Retrieve original incoming path from Vercel's edge forwarding header
+  const forwardedPath = req.headers["x-vercel-forwarded-path"];
+  if (forwardedPath && typeof forwardedPath === "string") {
     const urlParts = req.url.split("?");
     const query = urlParts[1] ? "?" + urlParts[1] : "";
-    req.url = originalPath + query;
+    req.url = forwardedPath + query;
   }
   next();
 });
