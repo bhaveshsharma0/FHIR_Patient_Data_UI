@@ -15,16 +15,30 @@ app.use(express.json());
 
 // Vercel Path-Correction Middleware to resolve Express sub-routing issues
 app.use((req, _res, next) => {
+  // 1. Check if we received a custom query parameter __vd_path from vercel.json rewrite
+  const urlParts = req.url.split("?");
+  const rawQuery = urlParts[1] || "";
+  
+  if (rawQuery.includes("__vd_path")) {
+    const params = new URLSearchParams(rawQuery);
+    const originalPathQuery = params.get("__vd_path");
+    if (originalPathQuery) {
+      params.delete("__vd_path");
+      const newQuery = params.toString();
+      req.url = originalPathQuery + (newQuery ? "?" + newQuery : "");
+      return next();
+    }
+  }
+
   // If the incoming URL already contains our core route descriptors, let's keep it pristine
   const hasValidRoute = req.url.includes("/patient") || req.url.includes("/ai/") || req.url.includes("/health");
   if (hasValidRoute) {
     return next();
   }
 
-  // Retrieve original incoming path from Vercel's edge forwarding header
-  const forwardedPath = req.headers["x-vercel-forwarded-path"];
+  // 2. Retrieve original incoming path from Vercel's edge forwarding headers as robust fallbacks
+  const forwardedPath = req.headers["x-vercel-forwarded-path"] || req.headers["x-forwarded-path"] || req.headers["x-matched-path"];
   if (forwardedPath && typeof forwardedPath === "string") {
-    const urlParts = req.url.split("?");
     const query = urlParts[1] ? "?" + urlParts[1] : "";
     req.url = forwardedPath + query;
   }
